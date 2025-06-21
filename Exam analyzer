@@ -1,0 +1,176 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Marks Analyzer with Grades</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input[type="number"] {
+      width: 60px;
+    }
+    .student-input {
+      margin-bottom: 10px;
+    }
+    canvas {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Form Three Scarlet Chemistry </h2>
+
+  <div id="inputs">
+    <div class="student-input">
+      <label>Monicah Wangari: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Mary Mugure : <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Susan Njoki: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Jane Wangui: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Grace kamau: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Anne Mwende : <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Grace Musembi: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Jennifer Atieno: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Winifred Achieng: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Joan Katune: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Damaris Njoki: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Yvonne Mutua : <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Deborah Mumo: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Hellen Omondi : <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Rose Muhandi: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Stella Wangari : <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Tabitha Wambui: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Amina Husein: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+    <div class="student-input">
+      <label>Kevina Wekesa: <input type="number" min="0" max="100" class="mark" /></label>
+    </div>
+  </div>
+
+  <button onclick="analyzeMarks()">Analyze</button>
+
+  <h3>Results</h3>
+  <p><strong>Mean Score:</strong> <span id="meanGrade"></span> | <strong>Mean Grade:</strong> <span id="meanLetter"></span></p>
+  <ul id="positions"></ul>
+
+  <canvas id="performanceChart" width="600" height="300"></canvas>
+
+  <script>
+    function getGrade(mark) {
+      if (mark >= 80) return 'A';
+      if (mark >= 70) return 'B';
+      if (mark >= 60) return 'C';
+      if (mark >= 50) return 'D';
+      return 'F';
+    }
+
+    function analyzeMarks() {
+      const inputs = document.querySelectorAll('.mark');
+      const marks = [];
+
+      inputs.forEach((input, i) => {
+        const value = parseFloat(input.value);
+        if (!isNaN(value)) {
+          marks.push({
+            name: 'Student ' + (i + 1),
+            mark: value,
+            grade: getGrade(value)
+          });
+        }
+      });
+
+      if (marks.length === 0) {
+        alert('Please enter at least one valid mark.');
+        return;
+      }
+
+      // Calculate mean
+      const total = marks.reduce((sum, student) => sum + student.mark, 0);
+      const mean = total / marks.length;
+      const meanGrade = getGrade(mean);
+      document.getElementById('meanGrade').textContent = mean.toFixed(2);
+      document.getElementById('meanLetter').textContent = meanGrade;
+
+      // Sort for positioning
+      marks.sort((a, b) => b.mark - a.mark);
+      const list = document.getElementById('positions');
+      list.innerHTML = '';
+      marks.forEach((student, i) => {
+        const li = document.createElement('li');
+        li.textContent = `${student.name} - Mark: ${student.mark} - Grade: ${student.grade} - Position: ${i + 1}`;
+        list.appendChild(li);
+      });
+
+      // Draw Chart
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      if (window.barChart) window.barChart.destroy(); // Destroy previous chart
+
+      window.barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: marks.map(s => s.name),
+          datasets: [{
+            label: 'Marks',
+            data: marks.map(s => s.mark),
+            backgroundColor: marks.map(s => {
+              switch (s.grade) {
+                case 'A': return 'rgba(75, 192, 192, 0.6)';
+                case 'B': return 'rgba(153, 102, 255, 0.6)';
+                case 'C': return 'rgba(255, 205, 86, 0.6)';
+                case 'D': return 'rgba(255, 159, 64, 0.6)';
+                case 'F': return 'rgba(255, 99, 132, 0.6)';
+              }
+            })
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+     
