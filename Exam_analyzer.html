@@ -176,10 +176,17 @@
             backgroundColor: marks.map(s => {
               switch (s.grade) {
                 case 'A': return 'rgba(75, 192, 192, 0.6)';
+                case 'A-': return 'rgba(55, 255, 28, 0.6)';
+                case 'B+': return 'rgba(100, 76, 255, 0.6)';
                 case 'B': return 'rgba(153, 102, 255, 0.6)';
+                case 'B-': return 'rgba(35, 255, 200, 0.6)';
+                case 'C+': return 'rgba(160, 120, 240, 0.6)';
                 case 'C': return 'rgba(255, 205, 86, 0.6)';
-                case 'D': return 'rgba(255, 159, 64, 0.6)';
-                case 'F': return 'rgba(255, 99, 132, 0.6)';
+                case 'C-': return 'rgba(255, 159, 64, 0.6)';
+                case 'D+': return 'rgba(255, 99, 132, 0.6)';
+                case 'D': return 'rgba(250, 70, 120, 0.6)';
+                case 'D-': return 'rgba(100, 50, 255, 0.6)';
+                case 'E': return 'rgba(20, 254, 10, 0.6)';
               }
             })
           }]
