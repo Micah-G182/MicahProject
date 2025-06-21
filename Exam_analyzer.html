@@ -8,20 +8,36 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      border-style: double;
+      border-color: maroon;
+      background-color: cream;
+    }
+    .header {
+     background-color: lightgreen;
+     border-style: double;
+     border-color: darkgreen;
+     padding: 20px;
+     
     }
     input[type="number"] {
       width: 60px;
+      color: purple;
     }
     .student-input {
+      background-color: grey;
       margin-bottom: 10px;
     }
     canvas {
       margin-top: 30px;
+      border-style: double;
+      border-color: darkgreen;
     }
   </style>
 </head>
 <body>
-  <h2>Form Three Scarlet Chemistry </h2>
+ <div class="header">
+  <h2 style= "color: maroon;"><b></b>Form Three Scarlet Chemistry</b> </h2>
+ </div>
 
   <div id="inputs">
     <div class="student-input">
@@ -83,9 +99,9 @@
     </div>
   </div>
 
-  <button onclick="analyzeMarks()">Analyze</button>
+  <button onclick="analyzeMarks()"> <b>ANALYSE</b> </button>
 
-  <h3>Results</h3>
+  <h3 style= "color:brown;"> <b>Results </b> </h3>
   <p><strong>Mean Score:</strong> <span id="meanGrade"></span> | <strong>Mean Grade:</strong> <span id="meanLetter"></span></p>
   <ul id="positions"></ul>
 
@@ -94,10 +110,17 @@
   <script>
     function getGrade(mark) {
       if (mark >= 80) return 'A';
-      if (mark >= 70) return 'B';
-      if (mark >= 60) return 'C';
-      if (mark >= 50) return 'D';
-      return 'F';
+      if (mark >= 75) return 'A-';
+      if (mark >= 70) return 'B+';
+      if (mark >= 65) return 'B';
+      if (mark >= 60) return 'B-';
+      if (mark >= 55) return 'C+';
+      if (mark >= 50) return 'C';
+      if (mark >= 45) return 'C-';
+      if (mark >= 40) return 'D+';
+      if (mark >= 35) return 'D';
+      if (mark >= 30) return 'D-';
+      return 'E';
     }
 
     function analyzeMarks() {
