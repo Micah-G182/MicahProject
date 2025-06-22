@@ -42,6 +42,7 @@
   <h2 style= "color: maroon;"> <b>End Of Term One Exam Analysis</b> </h2>
   <h2 style= "color: maroon;"> <b>Form Three Scarlet Chemistry</b> </h2>
   <h3 style= "color: darkbrown;"> <strong>Subject Teacher: Mr.Micah G.N </strong> </h3>
+  <h3 style= "color: darkbrown;"> <strong>Class Teacher: Mr.Dan A</strong></h3>
   <p>Enter marks for each student in the spaces provided in percentage then press the 'Analyse' button. </p>
  </div>
 
@@ -112,8 +113,12 @@
   <ul id="positions"></ul>
 
   <canvas id="performanceChart" width="600" height="300"></canvas>
+ <p>Date and time analysis done:</p>
+ <p id= "demo" style= "color:purple; border-line:solid red;"></p>
 
   <script>
+   const day = new Date();
+   document.getElementById("demo").innerHTML = day;
     function getGrade(mark) {
       if (mark >= 80) return 'A';
       if (mark >= 75) return 'A-';
