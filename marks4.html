@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bright Academy - Student Marks System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; padding: 20px; color: #333; }
+    h1, h2 { color: #2a2a2a; }
+    select, button, input { padding: 6px; font-size: 16px; margin: 5px 0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; background: white; border-radius: 10px; overflow: hidden; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #e8eaf6; }
+    .section { background: white; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+    canvas { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Bright Academy - Student Marks & Analysis System</h1>
+
+  <div class="section">
+    <h2>Marks Entry</h2>
+    <label>Class: 
+      <select id="classSelect"></select>
+    </label>
+    <label>Subject: 
+      <select id="subjectSelect"></select>
+    </label>
+    <button onclick="loadMarks()">Load</button>
+    <div id="marksContainer"></div>
+  </div>
+
+  <div class="section">
+    <h2>Individual Report</h2>
+    <label>Class: 
+      <select id="reportClassSelect"></select>
+    </label>
+    <label>Student: 
+      <select id="reportStudentSelect"></select>
+    </label>
+    <button onclick="generateReport()">Generate Report</button>
+    <div id="reportOutput"></div>
+  </div>
+
+  <div class="section">
+    <h2>Class Performance Analysis</h2>
+    <label>Select Class: 
+      <select id="analysisClassSelect"></select>
+    </label>
+    <button onclick="analyzeClass()">Analyze</button>
+    <div>
+      <h3 id="classTitle"></h3>
+      <canvas id="classChart"></canvas>
+      <p id="classAverage"></p>
+    </div>
+  </div>
+
+<script>
+  const subjects = ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "CRE", "Geography", "Agriculture"];
+  const studentData = {
+    "Form 2 Scarlet": ["Milka Moraa", "Grace Wangari", "Jane Wanjiru", "Precious Wanjiru"],
+    "Form 2 Lilac": ["Anne Mokeira", "Mary Onyango", "Damari Achieng", "Florian Wangari"],
+    "Form 3 Peach": ["Hellen Monyangi", "Daisy Rabera", "Jesca Moraa", "Janet Atieno"],
+    "Form 3 Scarlet": ["Mary Atieno", "Florence Achieng", "Kerubo James", "Monica Kemunto"]
+  };
+  const dbKey = 'brightAcademyData';
+  let db = JSON.parse(localStorage.getItem(dbKey)) || {};
+  let chart;
+
+  function populateSelects() {
+    const classSelects = document.querySelectorAll("#classSelect, #reportClassSelect, #analysisClassSelect");
+    classSelects.forEach(sel => {
+      sel.innerHTML = Object.keys(studentData).map(cls => `<option value="${cls}">${cls}</option>`).join("");
+    });
+    document.getElementById("subjectSelect").innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join("");
+  }
+
+  function loadMarks() {
+    const cls = document.getElementById("classSelect").value;
+    const subject = document.getElementById("subjectSelect").value;
+    const students = studentData[cls];
+    let html = `<table><tr><th>Student</th><th>Marks (${subject})</th></tr>`;
+    students.forEach(stu => {
+      const key = `${cls}-${stu}`;
+      const mark = (db[key] && db[key][subject]) || '';
+      html += `<tr><td>${stu}</td><td><input type="number" min="0" max="100" value="${mark}" onchange="saveMark('${key}', '${subject}', this.value)"></td></tr>`;
+    });
+    html += `</table>`;
+    document.getElementById("marksContainer").innerHTML = html;
+  }
+
+  function saveMark(key, subject, value) {
+    if (!db[key]) db[key] = {};
+    db[key][subject] = Number(value);
+    localStorage.setItem(dbKey, JSON.stringify(db));
+  }
+
+  function generateReport() {
+    const cls = document.getElementById("reportClassSelect").value;
+    const stu = document.getElementById("reportStudentSelect").value;
+    const key = `${cls}-${stu}`;
+    const marks = db[key] || {};
+    let total = 0, count = 0;
+    let html = `<h3>Report for ${stu} (${cls})</h3><table><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr>`;
+    subjects.forEach(sub => {
+      let m = marks[sub] ?? '-';
+      let g = typeof m === "number" ? grade(m) : '-';
+      html += `<tr><td>${sub}</td><td>${m}</td><td>${g}</td></tr>`;
+      if (typeof m === "number") {
+        total += m; count++;
+      }
+    });
+    const avg = count > 0 ? (total / count).toFixed(2) : '-';
+    html += `</table><p><strong>Average: ${avg}</strong></p>`;
+    document.getElementById("reportOutput").innerHTML = html;
+  }
+
+  function grade(score) {
+    if (score >= 80) return 'A';
+    if (score >= 70) return 'B';
+    if (score >= 60) return 'C';
+    if (score >= 50) return 'D';
+    return 'E';
+  }
+
+  document.getElementById("reportClassSelect").addEventListener('change', () => {
+    const cls = document.getElementById("reportClassSelect").value;
+    const sel = document.getElementById("reportStudentSelect");
+    sel.innerHTML = studentData[cls].map(s => `<option>${s}</option>`).join("");
+  });
+
+  function analyzeClass() {
+    const className = document.getElementById('analysisClassSelect').value;
+    const students = studentData[className];
+    let subjectTotals = Array(subjects.length).fill(0);
+    let subjectCounts = Array(subjects.length).fill(0);
+
+    students.forEach(student => {
+      const studentKey = `${className}-${student}`;
+      const marks = db[studentKey] || {};
+      subjects.forEach((subject, idx) => {
+        if (marks[subject] !== undefined) {
+          subjectTotals[idx] += marks[subject];
+          subjectCounts[idx]++;
+        }
+      });
+    });
+
+    let averages = subjectTotals.map((total, idx) => {
+      const avg = subjectCounts[idx] > 0 ? total / subjectCounts[idx] : 0;
+      return parseFloat(avg.toFixed(2));
+    });
+
+    let overallTotal = averages.reduce((a, b) => a + b, 0);
+    let overallAverage = (overallTotal / averages.length).toFixed(2);
+
+    document.getElementById('classTitle').innerText = `Performance for ${className}`;
+    document.getElementById('classAverage').innerHTML = `<strong>Overall Class Average:</strong> ${overallAverage}`;
+
+    const colors = subjects.map(() => `hsl(${Math.random()*360}, 70%, 50%)`);
+
+    if (chart) chart.destroy();
+    const ctx = document.getElementById('classChart').getContext('2d');
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: subjects,
+        datasets: [{
+          label: 'Average Marks per Subject',
+          data: averages,
+          backgroundColor: colors
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  window.onload = () => {
+    populateSelects();
+    document.getElementById("reportClassSelect").dispatchEvent(new Event("change"));
+  };
+</script>
+</body>
+</html>
