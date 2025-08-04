@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bright Academy - Student Marks System</title>
+  <title>Maya Academy - Student Marks System</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; padding: 20px; color: #333; }
-    h1, h2 { color: #2a2a2a; }
+    body { font-family: 'Segoe UI', sans-serif; background: "cream"; padding: 20px; color:"lightbrown; }
+    h1, h2 { color:"darkblue"; }
     select, button, input { padding: 6px; font-size: 16px; margin: 5px 0; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; background: white; border-radius: 10px; overflow: hidden; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <h1>Bright Academy - Student Marks & Analysis System</h1>
+  <h1>Maya Academy - Student Marks & Analysis System</h1>
 
   <div class="section">
     <h2>Marks Entry</h2>
@@ -118,9 +118,16 @@
 
   function grade(score) {
     if (score >= 80) return 'A';
-    if (score >= 70) return 'B';
-    if (score >= 60) return 'C';
-    if (score >= 50) return 'D';
+    if (score >= 75) return 'A-';
+    if (score >= 70) return 'B+';
+    if (score >= 65) return 'B';
+    if (score >= 60) return 'B-';
+    if (score >= 55) return 'C+';
+    if (score >= 50) return 'C';
+    if (score >= 45) return 'C-';
+    if (score >= 40) return 'D+';
+    if (score >= 35) return 'D';
+    if (score >= 30) return 'D-';
     return 'E';
   }
 
