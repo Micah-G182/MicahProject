@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bright Academy - Final Report System</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1, h2, h3 { color: #2a2a2a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .print-area { margin-top: 30px; }
+    @media print {
+      button, input, select, textarea { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Bright Academy - Marks Entry & Report</h1>
+
+  <div>
+    <h3>Marks Entry</h3>
+    <label>Class:
+      <select id="classSelect">
+        <option value="Form 2 Scarlet">Form 2 Scarlet</option>
+        <option value="Form 2 Lilac">Form 2 Lilac</option>
+        <option value="Form 3 Peach">Form 3 Peach</option>
+        <option value="Form 3 Scarlet">Form 3 Scarlet</option>
+      </select>
+    </label>
+    <label>Student:
+      <select id="studentSelect"></select>
+    </label>
+    <table>
+      <thead><tr><th>Subject</th><th>Marks</th></tr></thead>
+      <tbody id="marksTable"></tbody>
+    </table>
+    <button onclick="saveMarks()">Save Marks</button>
+  </div>
+
+  <hr/>
+
+  <div>
+    <h3>Generate Report</h3>
+    <label>Student Name: <input type="text" id="studentName" /></label>
+    <label>Class:
+      <select id="reportClassSelect">
+        <option value="Form 2 Scarlet">Form 2 Scarlet</option>
+        <option value="Form 2 Lilac">Form 2 Lilac</option>
+        <option value="Form 3 Peach">Form 3 Peach</option>
+        <option value="Form 3 Scarlet">Form 3 Scarlet</option>
+      </select>
+    </label>
+    <label>Term: <input type="text" id="term" placeholder="e.g. Term 1"/></label>
+    <label>Year: <input type="number" id="year" placeholder="e.g. 2025"/></label>
+    <button onclick="generateReport()">Generate Report</button>
+    <button onclick="window.print()">Print Report</button>
+  </div>
+
+  <div class="print-area" id="reportArea"></div>
+
+  <script>
+    const subjects = ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "CRE", "Geography", "Agriculture"];
+    const studentData = {
+      "Form 2 Scarlet": ["Milka Moraa", "Grace Wangari", "Jane Wanjiru", "Precious Wanjiru"],
+      "Form 2 Lilac": ["Anne Mokeira", "Mary Onyango", "Damari Achieng", "Florian Wangari"],
+      "Form 3 Peach": ["Hellen Monyangi", "Daisy Rabera", "Jesca Moraa", "Janet Atieno"],
+      "Form 3 Scarlet": ["Mary Atieno", "Florence Achieng", "Kerubo James", "Monica Kemunto"]
+    };
+
+    const dbKey = 'brightAcademyData';
+    let db = JSON.parse(localStorage.getItem(dbKey)) || {};
+
+    const classSelect = document.getElementById('classSelect');
+    const studentSelect = document.getElementById('studentSelect');
+    const marksTable = document.getElementById('marksTable');
+
+    function populateStudents() {
+      const className = classSelect.value;
+      const students = studentData[className];
+      studentSelect.innerHTML = students.map(name => `<option value="${name}">${name}</option>`).join("");
+      populateMarks();
+    }
+
+    function populateMarks() {
+      const studentName = studentSelect.value;
+      const className = classSelect.value;
+      const studentKey = `${className}-${studentName}`;
+      const studentMarks = db[studentKey] || {};
+
+      marksTable.innerHTML = subjects.map(subject => {
+        const mark = studentMarks[subject] ?? "";
+        return `<tr><td>${subject}</td><td><input type="number" min="0" max="100" id="mark-${subject}" value="${mark}" /></td></tr>`;
+      }).join("");
+    }
+
+    function saveMarks() {
+      const className = classSelect.value;
+      const studentName = studentSelect.value;
+      const studentKey = `${className}-${studentName}`;
+      const marks = {};
+
+      subjects.forEach(subject => {
+        const val = parseInt(document.getElementById(`mark-${subject}`).value);
+        marks[subject] = isNaN(val) ? 0 : val;
+      });
+
+      db[studentKey] = marks;
+      localStorage.setItem(dbKey, JSON.stringify(db));
+      alert("Marks saved successfully!");
+    }
+
+    function gradeMark(score) {
+      if (score >= 80) return 'A';
+      if (score >= 70) return 'B';
+      if (score >= 60) return 'C';
+      if (score >= 50) return 'D';
+      return 'E';
+    }
+
+    function generateReport() {
+      const studentName = document.getElementById('studentName').value.trim();
+      const className = document.getElementById('reportClassSelect').value;
+      const term = document.getElementById('term').value.trim();
+      const year = document.getElementById('year').value.trim();
+
+      if (!studentName || !term || !year) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      if (!studentData[className].includes(studentName)) {
+        alert("Student not found in selected class!");
+        return;
+      }
+
+      const studentKey = `${className}-${studentName}`;
+      const studentMarks = db[studentKey] || {};
+      let total = 0;
+      let count = 0;
+
+      let rows = subjects.map(subject => {
+        const mark = studentMarks[subject] ?? 0;
+        total += mark;
+        count++;
+        return `<tr><td>${subject}</td><td>${mark}</td><td>${gradeMark(mark)}</td></tr>`;
+      }).join("");
+
+      const average = (total / count).toFixed(2);
+      const grade = gradeMark(average);
+
+      const reportHtml = `
+        <h2>Report Form - ${studentName}</h2>
+        <p><strong>Class:</strong> ${className}</p>
+        <p><strong>Term:</strong> ${term} &nbsp;&nbsp;&nbsp; <strong>Year:</strong> ${year}</p>
+        <table>
+          <thead><tr><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr><td><strong>Average</strong></td><td colspan="2"><strong>${average} (${grade})</strong></td></tr></tfoot>
+        </table>
+        <p><strong>Class Teacher’s Comment:</strong><br/><textarea rows="3" cols="80" placeholder="Enter teacher's comment here..."></textarea></p>
+        <p><strong>Principal’s Comment:</strong><br/><textarea rows="3" cols="80" placeholder="Enter principal's comment here..."></textarea></p>
+        <p><strong>Class Teacher’s Signature: _____________________</strong></p>
+        <p><strong>Principal’s Signature: _____________________</strong></p>
+      `;
+
+      document.getElementById('reportArea').innerHTML = reportHtml;
+    }
+
+    classSelect.addEventListener('change', populateStudents);
+    studentSelect.addEventListener('change', populateMarks);
+    populateStudents();
+  </script>
+</body>
+</html>
