@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bright Academy Marks System</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial; margin: 20px; background: lightgreen; }
+    h2 { color: purple; }
+    input, select, button, textarea {
+      margin: 5px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;
+    }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    td, th { border: 1px solid #ccc; padding: 5px; text-align: center; }
+    .hidden { display: none; }
+    .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    .btn { background: #3498db; color: white; border: none; cursor: pointer; }
+    .btn:hover { background: #2980b9; }
+    canvas { margin: 20px auto; display: block; max-width: 100%; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Bright Academy - Login</h2>
+  <select id="loginRole">
+    <option>Subject Teacher</option>
+    <option>Admin</option>
+  </select>
+  <input type="text" id="loginUser" placeholder="Enter Username">
+  <input type="password" id="loginPass" placeholder="Enter Password">
+  <button onclick="login()" class="btn">Login</button>
+</div>
+
+<div class="container hidden" id="teacherPanel">
+  <h2>Subject Teacher Panel</h2>
+  <select id="teacherClass">
+    <option>Form 2 Scarlet</option>
+    <option>Form 2 Lilac</option>
+    <option>Form 3 Peach</option>
+    <option>Form 3 Scarlet</option>
+  </select>
+  <input id="teacherSubject" placeholder="Subject (e.g., Mathematics)">
+  <textarea id="teacherMarks" placeholder="Enter marks like: Name,Mark (one per line)"></textarea>
+  <button onclick="saveMarks()" class="btn">Save Marks</button>
+</div>
+
+<div class="container hidden" id="adminPanel">
+  <h2>Admin Panel</h2>
+  <label>Term: <input id="term" value="Term 3"></label>
+  <label>Year: <input id="year" value="2025"></label>
+  <label>Exam Type: <input id="examType" value="End Term"></label>
+  <br>
+  <select id="adminClass">
+    <option>Form 2 Scarlet</option>
+    <option>Form 2 Lilac</option>
+    <option>Form 3 Peach</option>
+    <option>Form 3 Scarlet</option>
+  </select>
+  <button onclick="analyze()" class="btn">Analyze Marks</button>
+  <button onclick="generateReports()" class="btn">Generate Reports</button>
+  <button onclick="showCharts()" class="btn">Show Term-wise Charts</button>
+</div>
+
+<div class="container hidden" id="chartContainer">
+  <h2>Term-wise Subject Performance</h2>
+  <select id="chartSubject"></select>
+  <canvas id="subjectChart" height="150"></canvas>
+  <button onclick="downloadChart()" class="btn">Download Chart</button>
+  <button onclick="window.print()" class="btn">Print Chart</button>
+</div>
+
+<div class="container hidden" id="reportsContainer">
+  <h2>Student Report Forms</h2>
+  <div id="reportContent"></div>
+  <button onclick="printReports()" class="btn">Print All Reports</button>
+</div>
+
+<script>
+const passwords = {
+  "Admin": "admin123",
+  "Math": "math123",
+  "English": "eng123",
+  "Biology": "bio123",
+  "Chemistry": "chem123",
+  "Physics": "phys123",
+  "Kiswahili": "kisw123",
+  "CRE": "cre123",
+  "History": "hist123",
+  "Agriculture": "agri123",
+  "Geography": "geo123"
+};
+
+const classes = {
+  "Form 2 Scarlet": ["Milka Moraa", "Grace Wangari", "Jane Wanjiru", "Precious Wanjiru"],
+  "Form 2 Lilac": ["Anne Mokeira", "Mary Onyango", "Damari Achieng", "Florian Wangari"],
+  "Form 3 Peach": ["Hellen Monyangi", "Daisy Rabera", "Jesca Moraa", "Janet Atieno"],
+  "Form 3 Scarlet": ["Mary Atieno", "Florence Achieng", "Kerubo James", "Monica Kemunto"]
+};
+
+function login() {
+  const user = document.getElementById("loginUser").value;
+  const pass = document.getElementById("loginPass").value;
+  const role = document.getElementById("loginRole").value;
+
+  if (role === "Admin" && pass === passwords["Admin"]) {
+    document.getElementById("adminPanel").classList.remove("hidden");
+  } else if (role === "Subject Teacher" && Object.values(passwords).includes(pass)) {
+    document.getElementById("teacherPanel").classList.remove("hidden");
+  } else {
+    alert("Wrong password");
+  }
+}
+
+function saveMarks() {
+  const cls = document.getElementById("teacherClass").value;
+  const subj = document.getElementById("teacherSubject").value;
+  const term = document.getElementById("term").value;
+  const year = document.getElementById("year").value;
+  const exam = document.getElementById("examType").value;
+  const lines = document.getElementById("teacherMarks").value.trim().split("\n");
+  const data = lines.map(line => {
+    const [name, mark] = line.split(",").map(e => e.trim());
+    return { name, mark: +mark };
+  });
+
+  const key = `marks_${cls}_${subj}_${term}_${year}_${exam}`;
+  localStorage.setItem(key, JSON.stringify(data));
+  alert("Marks saved successfully.");
+}
+
+function analyze() {
+  const cls = document.getElementById("adminClass").value;
+  const students = classes[cls];
+  const term = document.getElementById("term").value;
+  const year = document.getElementById("year").value;
+  const exam = document.getElementById("examType").value;
+
+  const subjects = Object.keys(passwords).filter(k => k !== "Admin");
+  const scores = {};
+  students.forEach(s => scores[s] = []);
+
+  subjects.forEach(subj => {
+    const key = `marks_${cls}_${subj}_${term}_${year}_${exam}`;
+    const data = JSON.parse(localStorage.getItem(key) || "[]");
+    data.forEach(({ name, mark }) => {
+      if (scores[name]) scores[name].push(mark);
+    });
+  });
+
+  const avgs = students.map(name => {
+    const avg = scores[name].length ? scores[name].reduce((a, b) => a + b) / scores[name].length : 0;
+    return { name, avg: avg.toFixed(2) };
+  }).sort((a, b) => b.avg - a.avg);
+
+  let msg = `Class: ${cls} - Term: ${term}, ${year}, ${exam}\n\n`;
+  avgs.forEach((s, i) => msg += `${i + 1}. ${s.name} - Avg: ${s.avg}\n`);
+  alert(msg);
+}
+
+function generateReports() {
+  const cls = document.getElementById("adminClass").value;
+  const students = classes[cls];
+  const term = document.getElementById("term").value;
+  const year = document.getElementById("year").value;
+  const exam = document.getElementById("examType").value;
+  const subjects = Object.keys(passwords).filter(k => k !== "Admin");
+
+  const scores = {};
+  students.forEach(s => scores[s] = { total: 0, count: 0, subjects: {} });
+
+  subjects.forEach(subj => {
+    const key = `marks_${cls}_${subj}_${term}_${year}_${exam}`;
+    const data = JSON.parse(localStorage.getItem(key) || "[]");
+    data.forEach(({ name, mark }) => {
+      if (scores[name]) {
+        scores[name].total += mark;
+        scores[name].count++;
+        scores[name].subjects[subj] = mark;
+      }
+    });
+  });
+
+  const avgs = students.map(name => {
+    const student = scores[name];
+    const avg = student.count ? student.total / student.count : 0;
+    return { name, avg };
+  }).sort((a, b) => b.avg - a.avg);
+
+  const report = document.getElementById("reportContent");
+  report.innerHTML = "";
+  students.forEach(name => {
+    const student = scores[name];
+    const avg = student.count ? (student.total / student.count).toFixed(2) : "0.00";
+    const position = avgs.findIndex(s => s.name === name) + 1;
+    const grade = avg >= 80 ? "A" : avg >= 75 ? "A-" : avg >= 70 ? "B+" : avg >= 65 ? "B" :avg >= 60 ? "B-": avg >= 55 ? "C+": avg >= 50 ? "C": avg >= 45 ? "C-": avg >= 40 ? "D+": avg >= 35 ? "D": avg >= 30 ? "D-": "E";
+
+    let r = `<div style="page-break-after:always;border:1px solid #ccc;padding:10px;">
+      <h3>Bright Academy Report</h3>
+      <p>Name: <b>${name}</b></p>
+      <p>Class: ${cls}</p>
+      <p>Term: ${term}, Year: ${year}, Exam: ${exam}</p>
+      <table><tr><th>Subject</th><th>Mark</th></tr>`;
+    subjects.forEach(s => {
+      const mark = student.subjects[s] !== undefined ? student.subjects[s] : "-";
+      r += `<tr><td>${s}</td><td>${mark}</td></tr>`;
+    });
+    r += `</table>
+      <p><b>Average: ${avg}</b> | Grade: ${grade} | Position: ${position}/${students.length}</p>
+      <p>Class Teacher Comment: <input type="text" style="width:90%"></p>
+      <p>Principal Comment: <input type="text" style="width:90%"></p>
+      <p>Class Teacher Sign: ___________ &nbsp;&nbsp; Principal Sign: ___________</p>
+    </div>`;
+    report.innerHTML += r;
+  });
+
+  document.getElementById("reportsContainer").classList.remove("hidden");
+}
+
+function printReports() {
+  const w = window.open();
+  w.document.write("<html><head><title>Reports</title></head><body>");
+  w.document.write(document.getElementById("reportContent").innerHTML);
+  w.document.write("</body></html>");
+  w.print();
+  w.close();
+}
+
+function showCharts() {
+  const subjSel = document.getElementById("chartSubject");
+  subjSel.innerHTML = "";
+  Object.keys(passwords).filter(k => k !== "Admin").forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    subjSel.appendChild(opt);
+  });
+  document.getElementById("chartContainer").classList.remove("hidden");
+  drawChart();
+  subjSel.onchange = drawChart;
+}
+
+function drawChart() {
+  const subj = document.getElementById("chartSubject").value;
+  const allKeys = Object.keys(localStorage).filter(k => k.includes(`marks_`) && k.includes(`_${subj}_`));
+  const termData = {};
+  allKeys.forEach(key => {
+    const parts = key.split("_");
+    const cls = parts[1];
+    const t = parts[3], y = parts[4], ex = parts[5];
+    const label = `${t} ${y} (${cls})`;
+    const data = JSON.parse(localStorage.getItem(key));
+    const avg = data.reduce((a, b) => a + b.mark, 0) / data.length;
+    termData[label] = +avg.toFixed(2);
+  });
+
+  const ctx = document.getElementById("subjectChart").getContext("2d");
+  if (window.chart) window.chart.destroy();
+  window.chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(termData),
+      datasets: [{
+        label: subj,
+        data: Object.values(termData),
+        backgroundColor: '#3498db',
+        borderColor: '#2980b9',
+        borderWidth: 1
+      }, {
+        label: subj + " Trend",
+        data: Object.values(termData),
+        type: 'line',
+        fill: false,
+        borderColor: '#e74c3c',
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+
+function downloadChart() {
+  const link = document.createElement('a');
+  link.download = "chart.png";
+  link.href = document.getElementById('subjectChart').toDataURL();
+  link.click();
+}
+</script>
+
+</body>
+</html>
