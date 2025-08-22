@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Maya Girls Secondary School — Naivasha</title>
+  <style>
+    :root{
+      --brand:#0066a6;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f3f6fb;
+      --glass: rgba(255,255,255,0.7);
+      --radius:12px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg),#eef4fb 60%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      padding:12px 18px;
+      background:rgba(255,255,255,0.9);
+      position:sticky;
+      top:0;
+      z-index:50;
+      border-bottom:1px solid rgba(15,23,42,0.06);
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:8px;
+      background:linear-gradient(135deg,var(--brand),#8cc8ff);
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-weight:700;font-size:18px;box-shadow:0 6px 18px rgba(0,102,166,0.12);
+    }
+    .school-name{font-weight:700}
+    nav{display:flex;gap:8px;align-items:center;}
+    nav button{background:none;border:0;padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
+    nav button:hover{background:rgba(0,0,0,0.04)}
+    .container{max-width:1100px;margin:22px auto;padding:18px;}
+    .hero{
+      background:linear-gradient(90deg, rgba(0,102,166,0.08), rgba(140,200,255,0.05));
+      border-radius:var(--radius); padding:22px; display:grid;
+      grid-template-columns:1fr 320px; gap:18px; align-items:center;
+      box-shadow:0 6px 24px rgba(3,10,20,0.04);
+    }
+    .hero h1{margin:0;font-size:22px}
+    .hero p{color:var(--muted);margin:8px 0 0}
+    .quick-cards{display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(12,20,40,0.04)}
+    .btn{display:inline-block;padding:8px 12px;border-radius:10px;background:var(--brand);color:white;border:0;cursor:pointer;font-weight:700}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+    .news-list{display:flex;flex-direction:column;gap:12px}
+    .news-item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff, #fbfdff);border:1px solid rgba(3,10,20,0.03)}
+    .news-item img{width:120px;height:80px;object-fit:cover;border-radius:8px}
+    .news-meta{font-size:12px;color:var(--muted)}
+    .small{font-size:13px}
+    footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted)}
+    /* Admin modal/panel */
+    .admin-panel{display:none;position:fixed;right:22px;top:78px;width:420px;max-width:calc(100% - 40px);z-index:80}
+    .panel-inner{padding:14px;background:var(--card);border-radius:12px;box-shadow:0 18px 48px rgba(3,10,20,0.12)}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+    input[type="text"], input[type="password"], textarea, select{padding:10px;border-radius:8px;border:1px solid rgba(15,23,42,0.08);outline:none;font-size:14px}
+    textarea{min-height:80px;resize:vertical}
+    .row{display:flex;gap:8px}
+    .muted-note{font-size:12px;color:var(--muted);margin-top:6px}
+    /* responsive */
+    @media (max-width:880px){
+      .hero{grid-template-columns:1fr; padding:16px}
+      .grid{grid-template-columns:1fr; gap:12px}
+      nav{display:none}
+    }
+    /* simple forms for admissions & classes */
+    .admission-form{display:grid;gap:10px}
+    .class-card{padding:12px;border-radius:12px;background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid rgba(3,10,20,0.03)}
+    .center{display:flex;align-items:center;justify-content:center}
+    .notice{padding:10px;border-radius:10px;background:#fff6e6;border:1px solid rgba(255,160,0,0.12)}
+    .logo-upload{display:flex;gap:8px;align-items:center}
+    .small-link{background:none;border:0;color:var(--brand);cursor:pointer;font-weight:700;padding:6px 8px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" id="siteLogo">MG</div>
+      <div>
+        <div class="school-name">Maya Girls Secondary School</div>
+        <div class="muted small">Naivasha</div>
+      </div>
+    </div>
+
+    <nav id="mainNav" aria-label="Main navigation">
+      <button data-route="home">Home</button>
+      <button data-route="about">About</button>
+      <button data-route="news">News</button>
+      <button data-route="admissions">Admissions</button>
+      <button data-route="classes">Classes</button>
+      <button id="adminToggle">Admin</button>
+    </nav>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="enrollBtn">Apply Now</button>
+    </div>
+  </header>
+
+  <main class="container" id="app">
+    <!-- Content injected by JS -->
+  </main>
+
+  <div class="admin-panel" id="adminPanel" aria-hidden="true">
+    <div class="panel-inner card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Admin Panel</strong>
+        <button id="closeAdmin" class="small-link">Close</button>
+      </div>
+
+      <div id="adminArea">
+        <!-- Login form or admin tools -->
+        <div id="adminLogin">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="loginUser" value="admin" />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="password" />
+          </div>
+          <div class="row">
+            <button id="loginBtn" class="btn">Login</button>
+            <button id="resetAdmin" class="small-link">Reset to default</button>
+          </div>
+          <div class="muted-note">Default admin: <strong>admin</strong> / <strong>maya123</strong>. Change password after logging in.</div>
+        </div>
+
+        <div id="adminTools" style="display:none">
+          <div class="field">
+            <label>Upload School Logo (PNG/JPG)</label>
+            <div class="logo-upload">
+              <input type="file" id="logoInput" accept="image/*" />
+              <button id="clearLogo" class="small-link">Clear</button>
+            </div>
+            <div class="muted-note">Logo will be saved to your browser storage (localStorage).</div>
+          </div>
+
+          <hr />
+
+          <div class="field">
+            <label>Add / Edit News</label>
+            <input type="text" id="newsTitle" placeholder="News title" />
+            <textarea id="newsBody" placeholder="Write news content..."></textarea>
+            <input type="file" id="newsImage" accept="image/*" />
+            <div class="row">
+              <button id="saveNews" class="btn">Save News</button>
+              <button id="clearNewsForm" class="small-link">Clear</button>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="field">
+            <label>Change Admin Password</label>
+            <input type="password" id="newPass" placeholder="New password" />
+            <div class="row">
+              <button id="changePassBtn" class="btn">Change Password</button>
+            </div>
+          </div>
+
+          <hr />
+
+          <div>
+            <strong>Admin Actions</strong>
+            <div class="row" style="margin-top:8px">
+              <button id="logoutBtn" class="small-link">Logout</button>
+              <button id="exportNews" class="small-link">Export News (JSON)</button>
+              <button id="importNewsBtn" class="small-link">Import News</button>
+              <input type="file" id="importFile" accept=".json" style="display:none" />
+            </div>
+            <div class="muted-note">Export or import news to move between devices (local JSON file).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="container">
+    © <span id="year"></span> Maya Girls Secondary School — Naivasha · All rights reserved.
+  </footer>
+
+  <script>
+    /* ============== Simple SPA + LocalStorage-backed News + Admin ============== */
+
+    const routes = {
+      home: renderHome,
+      about: renderAbout,
+      news: renderNews,
+      admissions: renderAdmissions,
+      classes: renderClasses
+    };
+
+    // Local storage keys
+    const KEY_NEWS = 'maya_news_v1';
+    const KEY_ADMIN = 'maya_admin_v1';
+    const KEY_LOGO = 'maya_logo_v1';
+
+    // Ensure default admin exists
+    function ensureDefaultAdmin() {
+      let admin = JSON.parse(localStorage.getItem(KEY_ADMIN) || 'null');
+      if (!admin) {
+        admin = { username: 'admin', password: 'maya123' };
+        localStorage.setItem(KEY_ADMIN, JSON.stringify(admin));
+      }
+    }
+
+    ensureDefaultAdmin();
+
+    // Utility: load news
+    function loadNews() {
+      try {
+        return JSON.parse(localStorage.getItem(KEY_NEWS) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveNews(news) {
+      localStorage.setItem(KEY_NEWS, JSON.stringify(news));
+    }
+
+    // Utility: logo
+    function loadLogo() {
+      return localStorage.getItem(KEY_LOGO) || null;
+    }
+    function saveLogo(dataUrl) {
+      if (dataUrl) localStorage.setItem(KEY_LOGO, dataUrl);
+      else localStorage.removeItem(KEY_LOGO);
+      setLogoUI();
+    }
+    function setLogoUI() {
+      const logoDiv = document.getElementById('siteLogo');
+      const logo = loadLogo();
+      if (logo) {
+        logoDiv.style.background = 'none';
+        logoDiv.style.boxShadow = 'none';
+        logoDiv.innerHTML = '<img src="'+logo+'" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:8px" />';
+      } else {
+        logoDiv.style.background = 'linear-gradient(135deg,var(--brand),#8cc8ff)';
+        logoDiv.style.boxShadow = '0 6px 18px rgba(0,102,166,0.12)';
+        logoDiv.textContent = 'MG';
+      }
+    }
+    setLogoUI();
+
+    // Setup header nav
+    document.querySelectorAll('nav button[data-route]').forEach(btn=>{
+      btn.addEventListener('click', ()=>navigate(btn.dataset.route));
+    });
+    document.getElementById('enrollBtn').addEventListener('click', ()=>navigate('admissions'));
+    document.getElementById('adminToggle').addEventListener('click', toggleAdminPanel);
+    document.getElementById('closeAdmin').addEventListener('click', toggleAdminPanel);
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Small helper to render container content
+    function setMain(html) { document.getElementById('app').innerHTML = html; }
+
+    // --- Pages ---
+    function renderHome() {
+      const latest = loadNews().slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+      const html = `
+        <section class="hero">
+          <div>
+            <h1>Welcome to Maya Girls Secondary School — Naivasha</h1>
+            <p class="muted">A place where girls grow academically and morally. Explore our classes, read news & apply for admission.</p>
+            <div style="margin-top:12px">
+              <button class="btn" onclick="navigate('admissions')">Apply for Admission</button>
+              <button class="small-link" onclick="navigate('news')">See all news</button>
+            </div>
+            <div style="margin-top:16px" class="card">
+              <strong>Latest News</strong>
+              <div id="homeNewsPreview" style="margin-top:10px;">
+                ${latest.length ? latest.map(n => `
+                  <div style="margin-bottom:8px">
+                    <div style="font-weight:700">${escapeHtml(n.title)}</div>
+                    <div class="muted small">${new Date(n.date).toLocaleString()}</div>
+                    <div class="muted small">${escapeHtml(n.body).slice(0,120)}${n.body.length>120?'...':''}</div>
+                  </div>`).join('') : '<div class="muted small">No news yet. Admin can add news.</div>'}
+              </div>
+            </div>
+          </div>
+          <div class="quick-cards">
+            <div class="card">
+              <strong>Contact</strong>
+              <div class="muted small" style="margin-top:6px">Phone: +254 7xxx xxx xxx<br/>Email: info@mayagirls.ac.ke</div>
+            </div>
+            <div class="card center">
+              <div>
+                <strong>Open Days</strong>
+                <div class="muted small">Mondays & Wednesdays · 9:00 — 13:00</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid">
+          <div>
+            <div class="card">
+              <h3>Our Vision</h3>
+              <p class="muted">To empower young women through quality education and character formation.</p>
+            </div>
+
+            <div style="margin-top:14px" class="card">
+              <h3>What we offer</h3>
+              <ul>
+                <li>Strong academic program</li>
+                <li>Extracurricular activities and clubs</li>
+                <li>Boarding facilities</li>
+                <li>Guidance & counseling</li>
+              </ul>
+            </div>
+          </div>
+
+          <aside>
+            <div class="card">
+              <strong>Quick Links</strong>
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+                <button class="small-link" onclick="navigate('classes')">Classes (Grade 10 / Form 3 / Form 4)</button>
+                <button class="small-link" onclick="navigate('news')">News</button>
+                <button class="small-link" onclick="navigate('admissions')">Admissions</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+              <strong>Announcements</strong>
+              <div class="muted small" style="margin-top:8px">School reopens on <strong>1st September</strong>. Check admissions for requirements.</div>
+            </div>
+          </aside>
+        </div>
+      `;
+      setMain(html);
+    }
+
+    function renderAbout() {
+      setMain(`
+        <section class="card">
+          <h2>About Maya Girls Secondary School</h2>
+          <p class="muted">Maya Girls is a proud institution in Naivasha focused on academic excellence and the holistic development of girls.</p>
+          <h3>Our Values</h3>
+          <ul>
+            <li>Discipline</li>
+            <li>Integrity</li>
+            <li>Excellence</li>
+            <li>Service</li>
+          </ul>
+          <h3>Facilities</h3>
+          <ul>
+            <li>Science laboratories</li>
+            <li>Library</li>
+            <li>Sports fields</li>
+            <li>Boarding</li>
+          </ul>
+        </section>
+      `);
+    }
+
+    function renderNews() {
+      const news = loadNews().slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+      setMain(`
+        <section>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h2>School News</h2>
+            <div class="muted small">${news.length} item(s)</div>
+          </div>
+          <div class="news-list" id="newsList">
+            ${news.length ? news.map(n=>newsItemHtml(n)).join('') : '<div class="card muted small">No news published yet. Admin can add news via Admin panel.</div>'}
+          </div>
+        </section>
+      `);
+    }
+
+    function newsItemHtml(n) {
+      return `
+        <article class="news-item card" data-id="${n.id}">
+          ${n.image ? `<img src="${n.image}" alt="${escapeHtml(n.title)}" />` : ''}
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div style="font-weight:700">${escapeHtml(n.title)}</div>
+              <div class="muted small">${new Date(n.date).toLocaleString()}</div>
+            </div>
+            <div class="muted small" style="margin-top:6px">${escapeHtml(n.body)}</div>
+            <div style="margin-top:10px">
+              <button class="small-link" onclick="viewNews('${n.id}')">Read more</button>
+              ${isAdmin() ? `<button class="small-link" onclick="editNews('${n.id}')">Edit</button> <button class="small-link" onclick="deleteNews('${n.id}')">Delete</button>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderAdmissions() {
+      setMain(`
+        <section class="card">
+          <h2>Admissions & Requirements</h2>
+          <p class="muted">We accept applicants for Grade 10, Form 3 and Form 4. Please prepare the following documents:</p>
+          <ul>
+            <li>Birth certificate</li>
+            <li>Report slip / KCPE / KCSE or transfer certificate</li>
+            <li>2024/2025 immunization card</li>
+            <li>Passport photo (2 copies)</li>
+          </ul>
+
+          <div style="margin-top:12px" class="admission-form">
+            <input id="appName" placeholder="Applicant full name" />
+            <select id="appClass">
+              <option value="Grade 10">Grade 10</option>
+              <option value="Form 3">Form 3</option>
+              <option value="Form 4">Form 4</option>
+            </select>
+            <input id="appParent" placeholder="Parent / Guardian name" />
+            <input id="appPhone" placeholder="Phone number" />
+            <div class="row">
+              <button class="btn" id="submitApp">Submit Application</button>
+              <button class="small-link" onclick="clearAdmission()">Clear</button>
+            </div>
+            <div id="appMessage" class="muted-note"></div>
+          </div>
+        </section>
+      `);
+
+      document.getElementById('submitApp').addEventListener('click', ()=>{
+        const name = document.getElementById('appName').value.trim();
+        const cls = document.getElementById('appClass').value;
+        const parent = document.getElementById('appParent').value.trim();
+        const phone = document.getElementById('appPhone').value.trim();
+        const msg = document.getElementById('appMessage');
+
+        if (!name || !parent || !phone) {
+          msg.textContent = 'Please fill all required fields.';
+          return;
+        }
+        // For demo: store simple application in localStorage 'maya_apps'
+        const apps = JSON.parse(localStorage.getItem('maya_apps_v1')||'[]');
+        apps.push({ id: 'app_' + Date.now(), name, cls, parent, phone, submitted: new Date().toISOString() });
+        localStorage.setItem('maya_apps_v1', JSON.stringify(apps));
+        msg.textContent = 'Application submitted. The school will contact you.';
+        document.getElementById('appName').value = '';
+        document.getElementById('appParent').value = '';
+        document.getElementById('appPhone').value = '';
+      });
+    }
+
+    function renderClasses() {
+      setMain(`
+        <section>
+          <h2>Classes</h2>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            ${classCardHtml('Grade 10','A foundation year preparing students with broad subjects and clubs.')}
+            ${classCardHtml('Form 3','Preparation for final exams with focused practicals and mentoring.')}
+            ${classCardHtml('Form 4','Final year: exam readiness, career guidance and transition support.')}
+          </div>
+        </section>
+      `);
+    }
+
+    function classCardHtml(title, desc){
+      return `
+        <div class="class-card" style="min-width:260px;max-width:340px">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="muted small">${escapeHtml(desc)}</div>
+          <div style="margin-top:10px">
+            <button class="small-link" onclick="alert('Showing sample timetable for ${escapeHtml(title)}')">View Timetable</button>
+            <button class="small-link" onclick="alert('Contact the school for admission to ${escapeHtml(title)}')">Contact</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Navigate
+    function navigate(route) {
+      const fn = routes[route] || renderHome;
+      fn();
+      // close admin panel if open
+      hideAdmin();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // Initial
+    navigate('home');
+
+    // Helper escape
+    function escapeHtml(str=''){
+      return String(str).replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+    }
+
+    // --- Admin Panel logic ---
+    const adminPanel = document.getElementById('adminPanel');
+    function toggleAdminPanel(){
+      if (adminPanel.style.display === 'block') hideAdmin();
+      else showAdmin();
+    }
+    function showAdmin(){
+      adminPanel.style.display = 'block';
+      adminPanel.setAttribute('aria-hidden','false');
+      // show login or tools based on auth
+      if (isAdmin()) showAdminTools();
+      else showAdminLogin();
+    }
+    function hideAdmin(){
+      adminPanel.style.display = 'none';
+      adminPanel.setAttribute('aria-hidden','true');
+    }
+
+    function isAdmin(){
+      return sessionStorage.getItem('maya_is_admin') === '1';
+    }
+
+    function showAdminLogin(){
+      document.getElementById('adminLogin').style.display = 'block';
+      document.getElementById('adminTools').style.display = 'none';
+    }
+    function showAdminTools(){
+      document.getElementById('adminLogin').style.display = 'none';
+      document.getElementById('adminTools').style.display = 'block';
+      // populate fields if needed
+    }
+
+    // Login
+    document.getElementById('loginBtn').addEventListener('click', ()=>{
+      const user = document.getElementById('loginUser').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const admin = JSON.parse(localStorage.getItem(KEY_ADMIN) || 'null');
+      if (admin && user === admin.username && pass === admin.password) {
+        sessionStorage.setItem('maya_is_admin','1');
+        showAdminTools();
+        alert('Logged in as admin.');
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    });
+
+    // Reset admin to defaults
+    document.getElementById('resetAdmin').addEventListener('click', ()=>{
+      if (!confirm('Reset admin username and password to defaults?')) return;
+      localStorage.setItem(KEY_ADMIN, JSON.stringify({username:'admin', password:'maya123'}));
+      alert('Admin reset. Use admin/maya123 to login.');
+    });
+
+    // Logo upload
+    document.getElementById('logoInput').addEventListener('change', async (e)=>{
+      const f = e.target.files[0];
+      if (!f) return;
+      if (!f.type.startsWith('image/')) return alert('Please upload an image file.');
+      const data = await fileToDataUrl(f);
+      saveLogo(data);
+      alert('Logo saved to browser storage.');
+    });
+    document.getElementById('clearLogo').addEventListener('click', ()=>{ saveLogo(null); alert('Logo cleared'); });
+
+    function fileToDataUrl(file){
+      return new Promise((res,rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    // Save news
+    let editNewsId = null;
+    document.getElementById('saveNews').addEventListener('click', async ()=>{
+      if (!isAdmin()) return alert('Please login as admin to add news.');
+      const title = document.getElementById('newsTitle').value.trim();
+      const body = document.getElementById('newsBody').value.trim();
+      const file = document.getElementById('newsImage').files[0];
+      if (!title || !body) return alert('Title and content are required.');
+      let image = null;
+      if (file) {
+        if (!file.type.startsWith('image/')) return alert('Please choose an image file.');
+        image = await fileToDataUrl(file);
+      }
+      const news = loadNews();
+      if (editNewsId) {
+        // edit existing
+        const idx = news.findIndex(n=>n.id===editNewsId);
+        if (idx >= 0) {
+          news[idx].title = title; news[idx].body = body;
+          if (image) news[idx].image = image;
+          news[idx].date = new Date().toISOString();
+        }
+        editNewsId = null;
+      } else {
+        news.unshift({ id:'n_'+Date.now(), title, body, image, date: new Date().toISOString() });
+      }
+      saveNews(news);
+      document.getElementById('newsTitle').value=''; document.getElementById('newsBody').value=''; document.getElementById('newsImage').value='';
+      alert('News saved.');
+      renderNews();
+    });
+
+    document.getElementById('clearNewsForm').addEventListener('click', ()=>{
+      document.getElementById('newsTitle').value=''; document.getElementById('newsBody').value=''; document.getElementById('newsImage').value=''; editNewsId = null;
+    });
+
+    // Change password
+    document.getElementById('changePassBtn').addEventListener('click', ()=>{
+      if (!isAdmin()) return alert('Please login as admin.');
+      const newP = document.getElementById('newPass').value;
+      if (!newP) return alert('Enter a new password.');
+      const admin = JSON.parse(localStorage.getItem(KEY_ADMIN) || 'null');
+      admin.password = newP;
+      localStorage.setItem(KEY_ADMIN, JSON.stringify(admin));
+      document.getElementById('newPass').value='';
+      alert('Password changed.');
+    });
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      sessionStorage.removeItem('maya_is_admin');
+      showAdminLogin();
+      alert('Logged out.');
+    });
+
+    // Edit/delete from site actions
+    function editNews(id) {
+      if (!isAdmin()) { alert('Please login as admin.'); showAdmin(); return; }
+      const news = loadNews();
+      const item = news.find(n=>n.id===id);
+      if (!item) return alert('News not found.');
+      // open admin panel and populate
+      showAdmin();
+      showAdminTools();
+      document.getElementById('newsTitle').value = item.title;
+      document.getElementById('newsBody').value = item.body;
+      editNewsId = id;
+      // note: image cannot be pre-populated into file input; keep existing image if none uploaded
+    }
+
+    function deleteNews(id) {
+      if (!isAdmin()) { alert('Please login as admin.'); showAdmin(); return; }
+      if (!confirm('Delete this news item?')) return;
+      let news = loadNews();
+      news = news.filter(n=>n.id!==id);
+      saveNews(news);
+      renderNews();
+    }
+
+    // View single news - simple modal-ish using alert or new page
+    function viewNews(id){
+      const news = loadNews();
+      const item = news.find(n=>n.id===id);
+      if (!item) return alert('Not found.');
+      // Simple modal: open a new window-like overlay
+      const modal = document.createElement('div');
+      modal.style.position='fixed';
+      modal.style.left=0;modal.style.top=0;modal.style.right=0;modal.style.bottom=0;
+      modal.style.display='flex';modal.style.alignItems='center';modal.style.justifyContent='center';
+      modal.style.background='rgba(2,6,23,0.4)';modal.style.zIndex=120;
+      const box = document.createElement('div');
+      box.style.width='min(900px,95%)';box.style.maxHeight='90vh';box.style.overflowY='auto';
+      box.style.background='white';box.style.borderRadius='12px';box.style.padding='18px';
+      box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>${escapeHtml(item.title)}</h3>
+          <div class="muted small">${new Date(item.date).toLocaleString()}</div>
+        </div>
+        ${item.image? '<img src="'+item.image+'" style="width:100%;max-height:360px;object-fit:cover;border-radius:10px;margin-top:10px"/>':''}
+        <div style="margin-top:12px">${escapeHtml(item.body).replace(/\n/g,'<br/>')}</div>
+        <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="small-link" id="closeNewsModal">Close</button>
+        </div>
+      `;
+      modal.appendChild(box);
+      document.body.appendChild(modal);
+      document.getElementById('closeNewsModal').addEventListener('click', ()=>modal.remove());
+      modal.addEventListener('click', (e)=>{ if (e.target===modal) modal.remove(); });
+    }
+
+    // Export/Import news
+    document.getElementById('exportNews').addEventListener('click', ()=>{
+      const data = localStorage.getItem(KEY_NEWS) || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'maya_news_export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    document.getElementById('importNewsBtn').addEventListener('click', ()=>document.getElementById('importFile').click());
+    document.getElementById('importFile').addEventListener('change', (e)=>{
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        try {
+          const j = JSON.parse(r.result);
+          if (!Array.isArray(j)) throw new Error('Invalid format');
+          localStorage.setItem(KEY_NEWS, JSON.stringify(j));
+          alert('Imported news. Refreshing news view.');
+          renderNews();
+        } catch(err) {
+          alert('Invalid import file.');
+        }
+      };
+      r.readAsText(f);
+    });
+
+    // utility: whether admin session exists to show edit buttons in news list
+    function decorateNewsButtons(){
+      // re-render news if needed
+      if (document.getElementById('newsList')) renderNews();
+    }
+
+    // Small helpers bound to global so markup can reference them
+    window.navigate = navigate;
+    window.viewNews = viewNews;
+    window.editNews = editNews;
+    window.deleteNews = deleteNews;
+
+    // Make sure the admin toggle shows correct state
+    window.addEventListener('storage', (e)=>{ if (e.key === KEY_NEWS) decorateNewsButtons(); });
+
+    // Auto-inject a sample news if none exists (only once)
+    (function seedNewsIfEmpty(){
+      const news = loadNews();
+      if (!news.length) {
+        const sample = [
+          { id: 'n_' + Date.now(), title: 'Welcome back to school!', body: 'We welcome all new and returning students to the 2025 academic year. Let us pursue excellence together.', date: new Date().toISOString(), image: '' }
+        ];
+        saveNews(sample);
+        renderNews();
+      }
+    })();
+
+    // Simple utility: clear admission fields
+    function clearAdmission(){
+      document.getElementById('appName').value = '';
+      document.getElementById('appParent').value = '';
+      document.getElementById('appPhone').value = '';
+      document.getElementById('appMessage').textContent = '';
+    }
+
+    // Expose some functions for debugging if needed
+    window._mg = {
+      loadNews, saveNews, loadLogo, saveLogo, isAdmin: isAdmin
+    };
+
+  </script>
+</body>
+</html>
+
