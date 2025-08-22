@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maya Girls Secondary School - Naivasha</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f9fff9; color: #333; }
+    header { background: green; color: white; padding: 20px; text-align: center; border-bottom: 6px double brown; }
+    nav { display: flex; justify-content: center; background: #eee; border-bottom: 2px solid brown; flex-wrap: wrap; }
+    nav a { padding: 14px 20px; text-decoration: none; color: green; font-weight: bold; }
+    nav a:hover { background: brown; color: white; }
+    section { padding: 30px; display: none; }
+    section.active { display: block; }
+    h2 { color: green; border-bottom: 2px solid brown; padding-bottom: 5px; }
+    footer { background: green; color: white; text-align: center; padding: 15px; border-top: 6px double brown; margin-top: 20px; }
+    textarea, input, select { width: 100%; margin-top: 8px; padding: 8px; }
+    button { margin-top: 10px; padding: 8px 14px; background: green; color: white; border: none; cursor: pointer; }
+    button:hover { background: brown; }
+    .map { width: 100%; height: 300px; background: #ccc; text-align: center; line-height: 300px; border: 2px solid brown; border-radius: 10px; }
+    .admin-only { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid brown; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Maya Girls Secondary School - Naivasha</h1>
+  </header>
+
+  <nav>
+    <a href="#" onclick="showSection('home')">Home</a>
+    <a href="#" onclick="showSection('location')">Location</a>
+    <a href="#" onclick="showSection('academics')">Academics</a>
+    <a href="#" onclick="showSection('clubs')">Clubs & Societies</a>
+    <a href="#" onclick="showSection('extracurricular')">Extra Curricular</a>
+    <a href="#" onclick="showSection('contact')">Contact Admin</a>
+    <a href="#" onclick="showSection('admissions')">New Admissions</a>
+    <a href="#" onclick="showSection('admin')">Admin Login</a>
+  </nav>
+
+  <section id="home" class="active">
+    <h2>Welcome</h2>
+    <p>Welcome to Maya Girls Secondary School, Naivasha. Excellence and discipline in academics and life.</p>
+  </section>
+
+  <section id="location">
+    <h2>Our Location</h2>
+    <div class="map">[Google Maps Placeholder]</div>
+  </section>
+
+  <section id="academics">
+    <h2>Academics</h2>
+    <h3>Subjects Offered</h3>
+    <div id="subjectsList"></div>
+    <textarea id="subjectsInput" class="admin-only"></textarea>
+    <button onclick="saveSubjects()" class="admin-only">Save Subjects</button>
+
+    <h3>Academic Reports</h3>
+    <div id="reportsList"></div>
+    <input type="file" id="reportUpload" class="admin-only">
+    <button onclick="uploadReport()" class="admin-only">Upload Report</button>
+  </section>
+
+  <section id="clubs">
+    <h2>Clubs & Societies</h2>
+    <div id="clubsList"></div>
+    <input type="file" id="clubsUpload" class="admin-only">
+    <button onclick="uploadClub()" class="admin-only">Upload File</button>
+  </section>
+
+  <section id="extracurricular">
+    <h2>Extra Curricular Activities</h2>
+    <div id="extraList"></div>
+    <input type="file" id="extraUpload" class="admin-only">
+    <button onclick="uploadExtra()" class="admin-only">Upload File</button>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Admin</h2>
+    <input type="text" id="senderName" placeholder="Your Name">
+    <input type="email" id="senderEmail" placeholder="Your Email">
+    <textarea id="messageBox" placeholder="Write your message here..."></textarea>
+    <button onclick="sendMessage()">Send Message</button>
+  </section>
+
+  <section id="admissions">
+    <h2>New Admissions</h2>
+    <input type="text" id="studentName" placeholder="Student Full Name">
+    <input type="text" id="parentPhone" placeholder="Parent Phone Number">
+    <input type="email" id="studentEmail" placeholder="Email Address">
+    <select id="classToJoin">
+      <option>Grade 10</option>
+      <option>Grade 11</option>
+      <option>Grade 12</option>
+      <option>Form 3</option>
+      <option>Form 4</option>
+    </select>
+    <button onclick="submitAdmission()">Submit Application</button>
+
+    <div class="admin-only">
+      <h3>Applications Received</h3>
+      <table id="admissionsTable"></table>
+      <button onclick="downloadAdmissions()">Download JSON</button>
+      <button onclick="printAdmissions()">Print</button>
+      <button onclick="clearAdmissions()">Clear All</button>
+    </div>
+  </section>
+
+  <section id="admin">
+    <h2>Admin Panel</h2>
+    <div id="loginForm">
+      <input type="password" id="adminPass" placeholder="Enter Admin Password">
+      <button onclick="login()">Login</button>
+    </div>
+    <div id="adminPanel" style="display:none;">
+      <h3>Welcome Admin</h3>
+      <button onclick="logout()">Logout</button>
+      <h3>Change Password</h3>
+      <input type="password" id="newPassword" placeholder="New Password">
+      <button onclick="changePassword()">Update Password</button>
+      <h3>Messages Received</h3>
+      <div id="messagesList"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Maya Girls Secondary School - Naivasha</p>
+  </footer>
+
+<script>
+  // Default admin password
+  if (!localStorage.getItem("adminPassword")) {
+    localStorage.setItem("adminPassword", "admin123");
+  }
+
+  function showSection(id) {
+    document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  function login() {
+    const pass = document.getElementById("adminPass").value;
+    if (pass === localStorage.getItem("adminPassword")) {
+      document.querySelectorAll(".admin-only").forEach(el => el.style.display = "block");
+      document.getElementById("adminPanel").style.display = "block";
+      document.getElementById("loginForm").style.display = "none";
+      loadMessages(); loadAdmissions(); loadSubjects(); loadReports(); loadClubs(); loadExtra();
+      alert("Admin logged in!");
+    } else { alert("Wrong password"); }
+  }
+  function logout() {
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+    document.getElementById("adminPanel").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+  }
+  function changePassword() {
+    const newPass = document.getElementById("newPassword").value;
+    if (newPass) { localStorage.setItem("adminPassword", newPass); alert("Password updated!"); }
+  }
+
+  // Subjects
+  function saveSubjects() {
+    const data = document.getElementById("subjectsInput").value;
+    localStorage.setItem("subjects", data);
+    loadSubjects();
+  }
+  function loadSubjects() {
+    document.getElementById("subjectsList").innerText = localStorage.getItem("subjects") || "No subjects listed.";
+  }
+
+  // Reports
+  function uploadReport() {
+    const file = document.getElementById("reportUpload").files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        let reports = JSON.parse(localStorage.getItem("reports") || "[]");
+        reports.push({name: file.name, data: reader.result});
+        localStorage.setItem("reports", JSON.stringify(reports));
+        loadReports();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  function loadReports() {
+    const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+    document.getElementById("reportsList").innerHTML = reports.map(r => `<a href="${r.data}" download="${r.name}">${r.name}</a>`).join("<br>");
+  }
+
+  // Clubs
+  function uploadClub() {
+    const file = document.getElementById("clubsUpload").files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        let clubs = JSON.parse(localStorage.getItem("clubs") || "[]");
+        clubs.push({name: file.name, data: reader.result});
+        localStorage.setItem("clubs", JSON.stringify(clubs));
+        loadClubs();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  function loadClubs() {
+    const clubs = JSON.parse(localStorage.getItem("clubs") || "[]");
+    document.getElementById("clubsList").innerHTML = clubs.map(c => `<a href="${c.data}" download="${c.name}">${c.name}</a>`).join("<br>");
+  }
+
+  // Extra Curricular
+  function uploadExtra() {
+    const file = document.getElementById("extraUpload").files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        let extras = JSON.parse(localStorage.getItem("extras") || "[]");
+        extras.push({name: file.name, data: reader.result});
+        localStorage.setItem("extras", JSON.stringify(extras));
+        loadExtra();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  function loadExtra() {
+    const extras = JSON.parse(localStorage.getItem("extras") || "[]");
+    document.getElementById("extraList").innerHTML = extras.map(e => `<a href="${e.data}" download="${e.name}">${e.name}</a>`).join("<br>");
+  }
+
+  // Messages
+  function sendMessage() {
+    const name = document.getElementById("senderName").value;
+    const email = document.getElementById("senderEmail").value;
+    const msg = document.getElementById("messageBox").value;
+    if (name && email && msg) {
+      let messages = JSON.parse(localStorage.getItem("messages") || "[]");
+      messages.push({name, email, msg});
+      localStorage.setItem("messages", JSON.stringify(messages));
+      alert("Message sent confidentially to Admin!");
+      document.getElementById("senderName").value = "";
+      document.getElementById("senderEmail").value = "";
+      document.getElementById("messageBox").value = "";
+    }
+  }
+  function loadMessages() {
+    const messages = JSON.parse(localStorage.getItem("messages") || "[]");
+    document.getElementById("messagesList").innerHTML = messages.map(m => `<p><b>${m.name}</b> (${m.email}): ${m.msg}</p>`).join("");
+  }
+
+  // Admissions
+  function submitAdmission() {
+    const name = document.getElementById("studentName").value;
+    const phone = document.getElementById("parentPhone").value;
+    const email = document.getElementById("studentEmail").value;
+    const cls = document.getElementById("classToJoin").value;
+    if (name && phone && email && cls) {
+      let admissions = JSON.parse(localStorage.getItem("admissions") || "[]");
+      admissions.push({name, phone, email, cls});
+      localStorage.setItem("admissions", JSON.stringify(admissions));
+      alert("Application submitted!");
+      document.getElementById("studentName").value = "";
+      document.getElementById("parentPhone").value = "";
+      document.getElementById("studentEmail").value = "";
+      loadAdmissions();
+    }
+  }
+  function loadAdmissions() {
+    const admissions = JSON.parse(localStorage.getItem("admissions") || "[]");
+    let table = "<tr><th>Name</th><th>Phone</th><th>Email</th><th>Class</th></tr>";
+    admissions.forEach(a => { table += `<tr><td>${a.name}</td><td>${a.phone}</td><td>${a.email}</td><td>${a.cls}</td></tr>`; });
+    document.getElementById("admissionsTable").innerHTML = table;
+  }
+  function downloadAdmissions() {
+    const data = localStorage.getItem("admissions") || "[]";
+    const blob = new Blob([data], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "admissions.json"; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function printAdmissions() {
+    const printContent = document.getElementById("admissionsTable").outerHTML;
+    const win = window.open("", "", "width=800,height=600");
+    win.document.write("<h2>Admissions</h2>" + printContent);
+    win.print();
+  }
+  function clearAdmissions() {
+    localStorage.removeItem("admissions");
+    loadAdmissions();
+    alert("All admissions cleared!");
+  }
+</script>
+</body>
+</html>
