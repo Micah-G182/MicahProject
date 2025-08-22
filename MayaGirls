@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maya Girls Secondary School - Naivasha</title>
+  <style>
+    body {
+      background-color: #fdf5e6; /* cream */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: darkgreen;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 5px solid saddlebrown;
+    }
+    nav {
+      background-color: white;
+      border-bottom: 3px solid darkgreen;
+      text-align: center;
+      padding: 10px;
+    }
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: darkgreen;
+      font-weight: bold;
+    }
+    section {
+      padding: 20px;
+      margin: 20px;
+      border: 2px solid darkgreen;
+      border-radius: 8px;
+      background-color: white;
+    }
+    h2 {
+      color: darkgreen;
+      border-bottom: 2px solid saddlebrown;
+      padding-bottom: 5px;
+    }
+    form input, form select, form textarea, form button {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .admin-section {
+      background-color: #f0fff0;
+      border: 2px dashed brown;
+      padding: 10px;
+    }
+    .news-item, .progress-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid darkgreen;
+      border-radius: 5px;
+    }
+    footer {
+      text-align: center;
+      background-color: darkgreen;
+      color: white;
+      padding: 10px;
+      margin-top: 20px;
+      border-top: 5px solid saddlebrown;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Maya Girls Secondary School - Naivasha</h1>
+  </header>
+
+  <nav>
+    <a href="#news">News & Events</a>
+    <a href="#vacancy">Vacancies</a>
+    <a href="#progress">Academic Progress</a>
+    <a href="#contact">Contact Us</a>
+    <a href="#admin">Admin</a>
+  </nav>
+
+  <!-- News Section -->
+  <section id="news">
+    <h2>School News & Events</h2>
+    <div id="news-list"></div>
+  </section>
+
+  <!-- Vacancy Section -->
+  <section id="vacancy">
+    <h2>Vacancy Application</h2>
+    <form id="vacancyForm">
+      <input type="text" id="vac-name" placeholder="Full Name" required>
+      <input type="tel" id="vac-phone" placeholder="Phone Number" required>
+      <input type="email" id="vac-email" placeholder="Email Address" required>
+      <select id="vac-class" required>
+        <option value="">Select Class to Join</option>
+        <option>Grade 10</option>
+        <option>Form 3</option>
+        <option>Form 4</option>
+      </select>
+      <input type="number" id="vac-year" placeholder="Year to Join" required>
+      <button type="submit">Submit Application</button>
+    </form>
+    <div id="vacancy-success"></div>
+  </section>
+
+  <!-- Academic Progress -->
+  <section id="progress">
+    <h2>Academic Progress</h2>
+    <div id="progress-list"></div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact">
+    <h2>Contact Us</h2>
+    <p><b>Address:</b> Maya Girls Secondary School, Naivasha</p>
+    <p><b>Phone:</b> +254 700 123 456</p>
+    <p><b>Email:</b> info@mayagirls.ac.ke</p>
+
+    <form id="contactForm">
+      <input type="text" id="contact-name" placeholder="Your Name" required>
+      <input type="email" id="contact-email" placeholder="Your Email" required>
+      <textarea id="contact-message" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
+    <div id="contact-success"></div>
+  </section>
+
+  <!-- Admin Panel -->
+  <section id="admin" class="admin-section">
+    <h2>Admin Panel (Password Protected)</h2>
+    <input type="password" id="admin-pass" placeholder="Enter Admin Password">
+    <button onclick="adminLogin()">Login</button>
+
+    <div id="admin-area" style="display:none;">
+      <h3>Post News & Events</h3>
+      <input type="text" id="news-title" placeholder="Title">
+      <textarea id="news-content" placeholder="Content"></textarea>
+      <button onclick="postNews()">Post News</button>
+
+      <h3>Post Academic Progress</h3>
+      <input type="text" id="progress-title" placeholder="Title">
+      <textarea id="progress-content" placeholder="Content"></textarea>
+      <button onclick="postProgress()">Post Progress</button>
+
+      <h3>View Applications</h3>
+      <div id="applications-list"></div>
+
+      <h3>View Messages</h3>
+      <div id="messages-list"></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Maya Girls Secondary School - Naivasha</p>
+  </footer>
+
+<script>
+  const ADMIN_PASSWORD = "maya123";
+
+  // Load stored data
+  window.onload = function() {
+    displayNews();
+    displayProgress();
+    displayApplications();
+    displayMessages();
+  };
+
+  // Admin login
+  function adminLogin() {
+    const pass = document.getElementById("admin-pass").value;
+    if(pass === ADMIN_PASSWORD) {
+      document.getElementById("admin-area").style.display = "block";
+    } else {
+      alert("Wrong password!");
+    }
+  }
+
+  // News
+  function postNews() {
+    let title = document.getElementById("news-title").value;
+    let content = document.getElementById("news-content").value;
+    if(title && content) {
+      let news = JSON.parse(localStorage.getItem("news") || "[]");
+      news.push({title, content});
+      localStorage.setItem("news", JSON.stringify(news));
+      displayNews();
+      alert("News posted!");
+    }
+  }
+  function displayNews() {
+    let news = JSON.parse(localStorage.getItem("news") || "[]");
+    let list = document.getElementById("news-list");
+    list.innerHTML = "";
+    news.forEach(n => {
+      list.innerHTML += `<div class="news-item"><h4>${n.title}</h4><p>${n.content}</p></div>`;
+    });
+  }
+
+  // Progress
+  function postProgress() {
+    let title = document.getElementById("progress-title").value;
+    let content = document.getElementById("progress-content").value;
+    if(title && content) {
+      let progress = JSON.parse(localStorage.getItem("progress") || "[]");
+      progress.push({title, content});
+      localStorage.setItem("progress", JSON.stringify(progress));
+      displayProgress();
+      alert("Progress posted!");
+    }
+  }
+  function displayProgress() {
+    let progress = JSON.parse(localStorage.getItem("progress") || "[]");
+    let list = document.getElementById("progress-list");
+    list.innerHTML = "";
+    progress.forEach(p => {
+      list.innerHTML += `<div class="progress-item"><h4>${p.title}</h4><p>${p.content}</p></div>`;
+    });
+  }
+
+  // Vacancy applications
+  document.getElementById("vacancyForm").onsubmit = function(e) {
+    e.preventDefault();
+    let name = document.getElementById("vac-name").value;
+    let phone = document.getElementById("vac-phone").value;
+    let email = document.getElementById("vac-email").value;
+    let joinClass = document.getElementById("vac-class").value;
+    let year = document.getElementById("vac-year").value;
+
+    let applications = JSON.parse(localStorage.getItem("applications") || "[]");
+    applications.push({name, phone, email, joinClass, year});
+    localStorage.setItem("applications", JSON.stringify(applications));
+
+    document.getElementById("vacancy-success").innerText = "Application submitted successfully!";
+    displayApplications();
+  };
+
+  function displayApplications() {
+    let applications = JSON.parse(localStorage.getItem("applications") || "[]");
+    let list = document.getElementById("applications-list");
+    if(!list) return;
+    list.innerHTML = "";
+    applications.forEach(app => {
+      list.innerHTML += `<p><b>${app.name}</b> (${app.joinClass}, ${app.year}) - ${app.phone}, ${app.email}</p>`;
+    });
+  }
+
+  // Contact messages
+  document.getElementById("contactForm").onsubmit = function(e) {
+    e.preventDefault();
+    let name = document.getElementById("contact-name").value;
+    let email = document.getElementById("contact-email").value;
+    let message = document.getElementById("contact-message").value;
+
+    let messages = JSON.parse(localStorage.getItem("messages") || "[]");
+    messages.push({name, email, message});
+    localStorage.setItem("messages", JSON.stringify(messages));
+
+    document.getElementById("contact-success").innerText = "Message sent successfully!";
+    displayMessages();
+  };
+
+  function displayMessages() {
+    let messages = JSON.parse(localStorage.getItem("messages") || "[]");
+    let list = document.getElementById("messages-list");
+    if(!list) return;
+    list.innerHTML = "";
+    messages.forEach(m => {
+      list.innerHTML += `<p><b>${m.name}</b> (${m.email}) - ${m.message}</p>`;
+    });
+  }
+</script>
+
+</body>
+</html>
+
