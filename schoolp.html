@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bright Academy Student Portal</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:0; padding:0; background:#f2f2f2;}
+    header {background:#004080; color:white; padding:10px; text-align:center;}
+    .container {padding:20px;}
+    .login-box {max-width:400px; margin:40px auto; padding:20px; background:white; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+    input, button, select {width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc;}
+    button {background:#004080; color:white; cursor:pointer;}
+    nav {background:#004080; padding:10px; display:flex; gap:15px;}
+    nav button {background:white; color:#004080; border:none; border-radius:5px; padding:6px 10px;}
+    section {display:none; padding:20px;}
+    .doc-list li {margin:5px 0;}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Bright Academy Student Portal</h1>
+</header>
+
+<div id="loginScreen" class="container">
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Admission Number / Admin">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- ADMIN PORTAL -->
+<div id="adminPortal" style="display:none;">
+  <header><h2>Admin Portal</h2></header>
+  <nav>
+    <button onclick="showAdminSection('uploadDocs')">Upload Documents</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
+
+  <section id="uploadDocs">
+    <h3>Upload Documents</h3>
+    <input type="text" id="docTitle" placeholder="Document Title">
+    <select id="docCategory">
+      <option value="Fee Structure">Fee Structure</option>
+      <option value="Report Forms">Report Forms</option>
+      <option value="Notices">Notices</option>
+    </select>
+    <input type="file" id="docFile">
+    <button onclick="uploadDocument()">Upload</button>
+    <h4>Uploaded Documents</h4>
+    <button onclick="printAll()">Print All Documents</button>
+    <ul id="docList" class="doc-list"></ul>
+  </section>
+</div>
+
+<!-- STUDENT PORTAL -->
+<div id="studentPortal" style="display:none;">
+  <header><h2>Student Portal</h2></header>
+  <nav>
+    <button onclick="showStudentSection('academics')">Academics</button>
+    <button onclick="showStudentSection('fees')">Fees Balance</button>
+    <button onclick="showStudentSection('messages')">Class Teacher Message</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
+
+  <section id="academics">
+    <h3>Academics - Downloads</h3>
+    <button onclick="printAll()">Print All Documents</button>
+    <h4>Fee Structure</h4>
+    <ul id="studentFee"></ul>
+    <h4>Report Forms</h4>
+    <ul id="studentReports"></ul>
+    <h4>Notices</h4>
+    <ul id="studentNotices"></ul>
+  </section>
+
+  <section id="fees"><h3>Fees Balance</h3><p>Your balance will be shown here.</p></section>
+  <section id="messages"><h3>Message from Class Teacher</h3><p>Welcome and work hard!</p></section>
+</div>
+
+<script>
+  const adminUser = {username:"admin", password:"admin123"};
+  const students = [
+    {username:"1001", password:"pass1001"},
+    {username:"1002", password:"pass1002"}
+  ];
+
+  function login(){
+    let u = document.getElementById("username").value;
+    let p = document.getElementById("password").value;
+
+    if(u===adminUser.username && p===adminUser.password){
+      document.getElementById("loginScreen").style.display="none";
+      document.getElementById("adminPortal").style.display="block";
+      loadDocuments();
+    } else {
+      let student = students.find(s=>s.username===u && s.password===p);
+      if(student){
+        document.getElementById("loginScreen").style.display="none";
+        document.getElementById("studentPortal").style.display="block";
+        loadStudentDocuments();
+      } else {
+        alert("Invalid credentials!");
+      }
+    }
+  }
+
+  function logout(){
+    document.getElementById("loginScreen").style.display="block";
+    document.getElementById("adminPortal").style.display="none";
+    document.getElementById("studentPortal").style.display="none";
+  }
+
+  function showAdminSection(id){
+    document.querySelectorAll("#adminPortal section").forEach(sec=>sec.style.display="none");
+    document.getElementById(id).style.display="block";
+  }
+
+  function showStudentSection(id){
+    document.querySelectorAll("#studentPortal section").forEach(sec=>sec.style.display="none");
+    document.getElementById(id).style.display="block";
+  }
+
+  function uploadDocument(){
+    let title = document.getElementById("docTitle").value;
+    let category = document.getElementById("docCategory").value;
+    let fileInput = document.getElementById("docFile");
+
+    if(title==="" || fileInput.files.length===0){
+      alert("Enter title and select a file"); return;
+    }
+
+    let file = fileInput.files[0];
+    let reader = new FileReader();
+    reader.onload = function(e){
+      let docs = JSON.parse(localStorage.getItem("documents")||"[]");
+      docs.push({title:title, category:category, file:e.target.result});
+      localStorage.setItem("documents", JSON.stringify(docs));
+      loadDocuments();
+      document.getElementById("docTitle").value="";
+      document.getElementById("docFile").value="";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadDocuments(){
+    let list = document.getElementById("docList");
+    list.innerHTML="";
+    let docs = JSON.parse(localStorage.getItem("documents")||"[]");
+    docs.forEach((d,i)=>{
+      let li = document.createElement("li");
+      li.innerHTML = `<strong>[${d.category}]</strong> ${d.title} - 
+        <a href="${d.file}" download="${d.title}">Download</a> 
+        <button onclick="printDocument('${d.file}')">Print</button>
+        <button onclick="deleteDocument(${i})">Delete</button>`;
+      list.appendChild(li);
+    });
+  }
+
+  function loadStudentDocuments(){
+    document.getElementById("studentFee").innerHTML="";
+    document.getElementById("studentReports").innerHTML="";
+    document.getElementById("studentNotices").innerHTML="";
+    let docs = JSON.parse(localStorage.getItem("documents")||"[]");
+
+    docs.forEach(d=>{
+      let li = document.createElement("li");
+      li.innerHTML = `${d.title} - 
+        <a href="${d.file}" download="${d.title}">Download</a> 
+        <button onclick="printDocument('${d.file}')">Print</button>`;
+      if(d.category==="Fee Structure") document.getElementById("studentFee").appendChild(li);
+      if(d.category==="Report Forms") document.getElementById("studentReports").appendChild(li);
+      if(d.category==="Notices") document.getElementById("studentNotices").appendChild(li);
+    });
+  }
+
+  function deleteDocument(index){
+    let docs = JSON.parse(localStorage.getItem("documents")||"[]");
+    docs.splice(index,1);
+    localStorage.setItem("documents", JSON.stringify(docs));
+    loadDocuments();
+  }
+
+  function printDocument(fileData){
+    let win = window.open();
+    win.document.write(`<iframe src="${fileData}" frameborder="0" style="width:100%;height:100%;"></iframe>`);
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+
+  function printAll(){
+    let docs = JSON.parse(localStorage.getItem("documents")||"[]");
+    if(docs.length===0){alert("No documents to print"); return;}
+
+    let win = window.open();
+    docs.forEach(d=>{
+      win.document.write(`<h3>${d.title} (${d.category})</h3>`);
+      win.document.write(`<iframe src="${d.file}" frameborder="0" style="width:100%;height:500px;margin-bottom:20px;"></iframe><hr>`);
+    });
+    win.document.close();
+    win.focus();
+    win.print();
+  }
+</script>
+</body>
+</html>
